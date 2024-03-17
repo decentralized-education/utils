@@ -1,0 +1,35 @@
+{
+  "name": "utils",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update": "yarn add decentralized-education/chaincraft-types"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decentralized-education/utils.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/decentralized-education/utils/issues"
+  },
+  "homepage": "https://github.com/decentralized-education/utils#readme",
+  "dependencies": {
+    "axios": "^1.6.3",
+    "chaincraft-types": "decentralized-education/chaincraft-types",
+    "ethers": "^5",
+    "moment": "^2.29.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.1",
+    "typescript": "^5.3.3"
+  }
+}
