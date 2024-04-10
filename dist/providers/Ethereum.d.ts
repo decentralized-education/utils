@@ -39,7 +39,7 @@ export default class EthereumWalletProvider implements IWalletProvider {
     }): ethers.providers.JsonRpcProvider;
     getRpcUrl({ chainId }: {
         chainId?: number;
-    }): "https://bsc-dataseed1.binance.org" | "https://mainnet.era.zksync.io" | "https://polygon-rpc.com" | "https://arbitrum.llamarpc.com" | "https://eth.llamarpc.com" | "https://optimism.llamarpc.com" | "https://rpc.ankr.com/avalanche" | undefined;
+    }): "https://bsc-dataseed1.binance.org" | "https://mainnet.era.zksync.io" | "https://polygon-rpc.com" | "https://arbitrum-one-rpc.publicnode.com" | "https://eth.llamarpc.com" | "https://optimism.llamarpc.com" | "https://rpc.ankr.com/avalanche" | undefined;
     createWalletFromPrivateKey(privateKey: string): Promise<WalletResponse<IWallet>>;
     createWalletFromMnemonic(mnemonic: string, path?: string): Promise<WalletResponse<IWallet>>;
     createWallet(): Promise<WalletResponse<IWallet>>;

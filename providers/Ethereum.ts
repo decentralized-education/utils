@@ -191,7 +191,8 @@ export default class EthereumWalletProvider implements IWalletProvider {
       return "https://polygon-rpc.com";
     }
     if (chainId == 42161) {
-      return "https://arbitrum.llamarpc.com";
+      // return "https://arbitrum.llamarpc.com";
+      return "https://arbitrum-one-rpc.publicnode.com"
     }
     if (chainId == 1) {
       return "https://eth.llamarpc.com";
@@ -208,8 +209,9 @@ export default class EthereumWalletProvider implements IWalletProvider {
     privateKey: string
   ): Promise<WalletResponse<IWallet>> {
     try {
+      const provider = this.getRpcProvider({});
       console.log("[etherem:createWallet] privateKey ", privateKey.length);
-      const ethersWallet = new ethers.Wallet(privateKey);
+      const ethersWallet = new ethers.Wallet(privateKey, provider);
       console.log(
         "[etherem:createWallet] address with private key",
         ethersWallet?.address
@@ -220,8 +222,8 @@ export default class EthereumWalletProvider implements IWalletProvider {
         wallet: {
           address: ethersWallet.address,
           privateKey: privateKey,
-          mnemonic: ethersWallet.mnemonic.phrase,
-          mnemonicPath: ethersWallet.mnemonic.path,
+          mnemonic: ethersWallet?.mnemonic?.phrase,
+          mnemonicPath: ethersWallet?.mnemonic?.path,
           providerWallet: ethersWallet,
         },
       };

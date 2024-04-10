@@ -171,7 +171,8 @@ class EthereumWalletProvider {
             return "https://polygon-rpc.com";
         }
         if (chainId == 42161) {
-            return "https://arbitrum.llamarpc.com";
+            // return "https://arbitrum.llamarpc.com";
+            return "https://arbitrum-one-rpc.publicnode.com";
         }
         if (chainId == 1) {
             return "https://eth.llamarpc.com";
@@ -186,16 +187,17 @@ class EthereumWalletProvider {
     }
     async createWalletFromPrivateKey(privateKey) {
         try {
+            const provider = this.getRpcProvider({});
             console.log("[etherem:createWallet] privateKey ", privateKey.length);
-            const ethersWallet = new ethers_1.ethers.Wallet(privateKey);
+            const ethersWallet = new ethers_1.ethers.Wallet(privateKey, provider);
             console.log("[etherem:createWallet] address with private key", ethersWallet?.address);
             return {
                 success: true,
                 wallet: {
                     address: ethersWallet.address,
                     privateKey: privateKey,
-                    mnemonic: ethersWallet.mnemonic.phrase,
-                    mnemonicPath: ethersWallet.mnemonic.path,
+                    mnemonic: ethersWallet?.mnemonic?.phrase,
+                    mnemonicPath: ethersWallet?.mnemonic?.path,
                     providerWallet: ethersWallet,
                 },
             };
