@@ -1,10 +1,12 @@
 import {
     BlockhashWithExpiryBlockHeight,
     Connection,
+    PublicKey,
     TransactionExpiredBlockheightExceededError,
     VersionedTransactionResponse,
 } from '@solana/web3.js'
 import promiseRetry from 'promise-retry'
+import * as bip39 from 'bip39'
 
 export const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 type TransactionSenderArgs = {
@@ -21,11 +23,8 @@ const SEND_OPTIONS = {
     skipPreflight: true,
 }
 
-export async function transactionSender({
-    connection,
-    serializedTransaction
-}: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
-    console.log("transactionSenderAndConfirmationWaiter sending")
+export async function transactionSender({ connection, serializedTransaction }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
+    console.log('transactionSenderAndConfirmationWaiter sending')
 
     const buffer = Buffer.from(serializedTransaction)
     const txid = await connection.sendRawTransaction(buffer, SEND_OPTIONS)
@@ -35,11 +34,11 @@ export async function transactionSender({
 
     const abortableResender = async () => {
         while (true) {
-            console.log("waiting")
+            console.log('waiting')
             await wait(2_000)
             if (abortSignal.aborted) return
             try {
-                console.log("waiting... sendRawTransaction")
+                console.log('waiting... sendRawTransaction')
                 await connection.sendRawTransaction(buffer, SEND_OPTIONS)
             } catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`)
@@ -64,7 +63,7 @@ export async function transactionSender({
     // in case rpc is not synced yet, we add some retries
     const response = promiseRetry(
         async (retry: any) => {
-            console.log("promise retry...")
+            console.log('promise retry...')
             const response = await connection.getTransaction(txid, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
@@ -83,14 +82,13 @@ export async function transactionSender({
     return response
 }
 
-
 export async function transactionConfirmationWaiter({
     connection,
     txHash,
     blockhashWithExpiryBlockHeight,
 }: TransactionConfirmationWaiterArgs): Promise<VersionedTransactionResponse | null> {
-    console.log("transactionSenderAndConfirmationWaiter sending")
-    
+    console.log('transactionSenderAndConfirmationWaiter sending')
+
     const controller = new AbortController()
     const abortSignal = controller.signal
 
@@ -111,9 +109,9 @@ export async function transactionConfirmationWaiter({
             new Promise(async (resolve) => {
                 // in case ws socket died
                 while (!abortSignal.aborted) {
-                    console.log("waiting for confirmation...")
+                    console.log('waiting for confirmation...')
                     await wait(2_000)
-                    console.log("checking signature status...")
+                    console.log('checking signature status...')
                     const tx = await connection.getSignatureStatus(txHash, {
                         searchTransactionHistory: false,
                     })
@@ -138,7 +136,7 @@ export async function transactionConfirmationWaiter({
     // in case rpc is not synced yet, we add some retries
     const response = promiseRetry(
         async (retry: any) => {
-            console.log("promise retry...")
+            console.log('promise retry...')
             const response = await connection.getTransaction(txHash, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
@@ -155,4 +153,24 @@ export async function transactionConfirmationWaiter({
     )
 
     return response
+}
+
+export const generateMnemonic = (): string => {
+    return bip39.generateMnemonic(128)
+}
+
+
+//TEMP UNTIL WE HAVE A SOLANA PROVIDER
+export async function getSolanaBalance(walletPublicKey: string): Promise<number | null> {
+    try {
+        const connection = new Connection('https://mainnet.helius-rpc.com/?api-key=91341763-781d-4e73-99cb-d8a4591e8150')
+        const publicKey = new PublicKey(walletPublicKey)
+        const value = await connection.getBalance(publicKey)
+        const solBalance = value / 10 ** 9
+
+        return solBalance
+    } catch (error) {
+        console.error('Error fetching SOL balance:', error)
+        return null
+    }
 }
