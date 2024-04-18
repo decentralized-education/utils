@@ -27,6 +27,7 @@
         "@ton/core": "^0.56.1",
         "@ton/crypto": "^3.2.0",
         "@ton/ton": "^13.10.0",
+        "@types/promise-retry": "^1.1.6",
         "axios": "^1.6.3",
         "bip39": "^3.1.0",
         "chaincraft-types": "decentralized-education/chaincraft-types",
