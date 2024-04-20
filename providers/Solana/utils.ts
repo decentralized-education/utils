@@ -159,7 +159,6 @@ export const generateMnemonic = (): string => {
     return bip39.generateMnemonic(128)
 }
 
-
 //TEMP UNTIL WE HAVE A SOLANA PROVIDER
 export async function getSolanaBalance(walletPublicKey: string): Promise<number | null> {
     try {

@@ -21,7 +21,6 @@ import {
     IWalletProviderCallParameters,
     WalletResponse,
 } from '../WalletProvider' // Assuming you have your interface file
-import promiseRetry from 'promise-retry'
 import { transactionConfirmationWaiter, transactionSender } from './utils'
 import * as bip39 from 'bip39'
 import { derivePath } from 'ed25519-hd-key'
