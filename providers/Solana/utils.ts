@@ -8,7 +8,7 @@ import {
 import promiseRetry from 'promise-retry'
 import * as bip39 from 'bip39'
 
-export const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
+const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 type TransactionSenderArgs = {
     connection: Connection
     serializedTransaction: string

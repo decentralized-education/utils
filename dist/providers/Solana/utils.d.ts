@@ -1,5 +1,4 @@
 import { BlockhashWithExpiryBlockHeight, Connection, VersionedTransactionResponse } from '@solana/web3.js';
-export declare const wait: (time: number) => Promise<unknown>;
 type TransactionSenderArgs = {
     connection: Connection;
     serializedTransaction: string;

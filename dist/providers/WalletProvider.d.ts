@@ -1,3 +1,4 @@
+import { Connection, Keypair } from "@solana/web3.js";
 import { TonClient, WalletContractV4 } from "@ton/ton";
 import { ethers } from "ethers";
 export interface IWallet {
@@ -5,7 +6,7 @@ export interface IWallet {
     mnemonic?: string;
     mnemonicPath?: string;
     privateKey?: string;
-    providerWallet?: ethers.Wallet | WalletContractV4;
+    providerWallet?: ethers.Wallet | WalletContractV4 | Keypair;
 }
 export type BaseResponse = {
     success: boolean;
@@ -54,7 +55,7 @@ export interface IWalletProvider {
     simulate(parameters: IWalletProviderCallParameters): Promise<SendTransactionResponse<any>>;
     getRpcProvider({ chainId }: {
         chainId: number;
-    }): ethers.providers.JsonRpcProvider | TonClient;
+    }): ethers.providers.JsonRpcProvider | TonClient | Connection;
     createWalletFromPrivateKey(privateKey: string): Promise<WalletResponse<IWallet>>;
     createWalletFromMnemonic(mnemonic: string, path?: string): Promise<WalletResponse<IWallet>>;
     createWallet(): Promise<WalletResponse<IWallet>>;

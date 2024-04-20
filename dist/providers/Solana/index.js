@@ -30,7 +30,7 @@ const bip39 = __importStar(require("bip39"));
 const ed25519_hd_key_1 = require("ed25519-hd-key");
 class SolanaWalletProvider {
     _connection; // Store the Solana connection
-    constructor(rpcEndpoint = 'https://mainnet.helius-rpc.com/?api-key=91341763-781d-4e73-99cb-d8a4591e8150') {
+    constructor(rpcEndpoint = 'https://api.mainnet-beta.solana.com') {
         this._connection = new web3_js_1.Connection(rpcEndpoint);
     }
     getRpcProvider({ chainId }) {

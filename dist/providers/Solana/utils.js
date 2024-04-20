@@ -26,12 +26,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSolanaBalance = exports.generateMnemonic = exports.transactionConfirmationWaiter = exports.transactionSender = exports.wait = void 0;
+exports.getSolanaBalance = exports.generateMnemonic = exports.transactionConfirmationWaiter = exports.transactionSender = void 0;
 const web3_js_1 = require("@solana/web3.js");
 const promise_retry_1 = __importDefault(require("promise-retry"));
 const bip39 = __importStar(require("bip39"));
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
-exports.wait = wait;
 const SEND_OPTIONS = {
     skipPreflight: true,
 };
@@ -44,7 +43,7 @@ async function transactionSender({ connection, serializedTransaction }) {
     const abortableResender = async () => {
         while (true) {
             console.log('waiting');
-            await (0, exports.wait)(2_000);
+            await wait(2_000);
             if (abortSignal.aborted)
                 return;
             try {
@@ -108,7 +107,7 @@ async function transactionConfirmationWaiter({ connection, txHash, blockhashWith
                 // in case ws socket died
                 while (!abortSignal.aborted) {
                     console.log('waiting for confirmation...');
-                    await (0, exports.wait)(2_000);
+                    await wait(2_000);
                     console.log('checking signature status...');
                     const tx = await connection.getSignatureStatus(txHash, {
                         searchTransactionHistory: false,
@@ -155,9 +154,10 @@ const generateMnemonic = () => {
     return bip39.generateMnemonic(128);
 };
 exports.generateMnemonic = generateMnemonic;
+//TEMP UNTIL WE HAVE A SOLANA PROVIDER
 async function getSolanaBalance(walletPublicKey) {
     try {
-        const connection = new web3_js_1.Connection('https://api.mainnet-beta.solana.com');
+        const connection = new web3_js_1.Connection('https://mainnet.helius-rpc.com/?api-key=91341763-781d-4e73-99cb-d8a4591e8150');
         const publicKey = new web3_js_1.PublicKey(walletPublicKey);
         const value = await connection.getBalance(publicKey);
         const solBalance = value / 10 ** 9;
