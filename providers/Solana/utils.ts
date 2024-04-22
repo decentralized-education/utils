@@ -11,7 +11,7 @@ import * as bip39 from 'bip39'
 const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 type TransactionSenderArgs = {
     connection: Connection
-    serializedTransaction: string
+    txBuffer: Buffer
 }
 type TransactionConfirmationWaiterArgs = {
     connection: Connection
@@ -20,14 +20,15 @@ type TransactionConfirmationWaiterArgs = {
 }
 
 const SEND_OPTIONS = {
-    skipPreflight: true,
+    skipPreflight: true
 }
 
-export async function transactionSender({ connection, serializedTransaction }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
+export async function transactionSender({ connection, txBuffer }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
     console.log('transactionSenderAndConfirmationWaiter sending')
 
-    const buffer = Buffer.from(serializedTransaction)
-    const txid = await connection.sendRawTransaction(buffer, SEND_OPTIONS)
+    const txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
+
+    console.log('[transactionSender ] txId ', txid)
 
     const controller = new AbortController()
     const abortSignal = controller.signal
@@ -39,7 +40,7 @@ export async function transactionSender({ connection, serializedTransaction }: T
             if (abortSignal.aborted) return
             try {
                 console.log('waiting... sendRawTransaction')
-                await connection.sendRawTransaction(buffer, SEND_OPTIONS)
+                await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
             } catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`)
             }
@@ -47,7 +48,7 @@ export async function transactionSender({ connection, serializedTransaction }: T
     }
 
     try {
-        abortableResender()
+        await abortableResender()
     } catch (e) {
         if (e instanceof TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null

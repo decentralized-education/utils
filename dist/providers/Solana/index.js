@@ -30,7 +30,7 @@ const bip39 = __importStar(require("bip39"));
 const ed25519_hd_key_1 = require("ed25519-hd-key");
 class SolanaWalletProvider {
     _connection; // Store the Solana connection
-    constructor(rpcEndpoint = 'https://api.mainnet-beta.solana.com') {
+    constructor(rpcEndpoint = 'https://greatest-purple-diamond.solana-mainnet.quiknode.pro/6bfdf61addc014ea72e6391db27ec3dc2368e30a/') {
         this._connection = new web3_js_1.Connection(rpcEndpoint);
     }
     getRpcProvider({ chainId }) {
@@ -147,6 +147,16 @@ class SolanaWalletProvider {
     async sendTransaction(parameters) {
         try {
             const connection = this._connection;
+            const serializedTransaction = Buffer.from(parameters.data, 'base64');
+            // Deserialize the transaction object
+            const transaction = web3_js_1.VersionedTransaction.deserialize(serializedTransaction);
+            console.log('[solana:sendTransaction] transaction ', transaction);
+            console.log('[solana:sendTransaction] wallet ', parameters.wallet);
+            // Sign the transaction with the sender's private key
+            //@ts-ignore
+            transaction.sign([parameters.wallet]);
+            // Serialize the signed transaction
+            const signedTransaction = transaction.serialize();
             let iteration = 0;
             let isSuccessful = false;
             let transactionResponse = null;
@@ -155,7 +165,7 @@ class SolanaWalletProvider {
                 console.log('[solana:sendTransaction] sending transaction: ', iteration);
                 transactionResponse = await (0, utils_1.transactionSender)({
                     connection,
-                    serializedTransaction: parameters.data,
+                    txBuffer: Buffer.from(signedTransaction),
                 });
                 console.log('[solana:sendTransaction] transactionResponse ', transactionResponse);
                 if (transactionResponse && transactionResponse?.meta?.err == null) {

@@ -32,12 +32,13 @@ const promise_retry_1 = __importDefault(require("promise-retry"));
 const bip39 = __importStar(require("bip39"));
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 const SEND_OPTIONS = {
-    skipPreflight: true,
+    skipPreflight: true
 };
-async function transactionSender({ connection, serializedTransaction }) {
+async function transactionSender({ connection, txBuffer }) {
     console.log('transactionSenderAndConfirmationWaiter sending');
-    const buffer = Buffer.from(serializedTransaction);
-    const txid = await connection.sendRawTransaction(buffer, SEND_OPTIONS);
+    console.log('tx Buffer', txBuffer);
+    const txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
+    console.log('[transactionSender ] txId ', txid);
     const controller = new AbortController();
     const abortSignal = controller.signal;
     const abortableResender = async () => {
@@ -48,7 +49,7 @@ async function transactionSender({ connection, serializedTransaction }) {
                 return;
             try {
                 console.log('waiting... sendRawTransaction');
-                await connection.sendRawTransaction(buffer, SEND_OPTIONS);
+                await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
             }
             catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`);
@@ -56,7 +57,7 @@ async function transactionSender({ connection, serializedTransaction }) {
         }
     };
     try {
-        abortableResender();
+        await abortableResender();
     }
     catch (e) {
         if (e instanceof web3_js_1.TransactionExpiredBlockheightExceededError) {

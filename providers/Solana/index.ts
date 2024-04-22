@@ -21,6 +21,7 @@ import {
     IWalletProviderCallParameters,
     WalletResponse,
 } from '../WalletProvider' // Assuming you have your interface file
+import promiseRetry from 'promise-retry'
 import { transactionConfirmationWaiter, transactionSender } from './utils'
 import * as bip39 from 'bip39'
 import { derivePath } from 'ed25519-hd-key'
@@ -28,7 +29,7 @@ import { derivePath } from 'ed25519-hd-key'
 export default class SolanaWalletProvider implements IWalletProvider {
     _connection: Connection // Store the Solana connection
 
-    constructor(rpcEndpoint: string = 'https://api.mainnet-beta.solana.com') {
+    constructor(rpcEndpoint: string = 'https://greatest-purple-diamond.solana-mainnet.quiknode.pro/6bfdf61addc014ea72e6391db27ec3dc2368e30a/') {
         this._connection = new Connection(rpcEndpoint)
     }
 
@@ -156,6 +157,15 @@ export default class SolanaWalletProvider implements IWalletProvider {
         try {
             const connection = this._connection
 
+            const serializedTransaction = Buffer.from(parameters.data!, 'base64')
+
+            const transaction = VersionedTransaction.deserialize(serializedTransaction)
+
+            //@ts-ignore
+            transaction.sign([parameters.wallet!])
+
+            const signedTransaction = transaction.serialize()
+
             let iteration = 0
             let isSuccessful = false
             let transactionResponse: VersionedTransactionResponse | null = null
@@ -165,7 +175,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
                 console.log('[solana:sendTransaction] sending transaction: ', iteration)
                 transactionResponse = await transactionSender({
                     connection,
-                    serializedTransaction: parameters.data!,
+                    txBuffer: Buffer.from(signedTransaction),
                 })
 
                 console.log('[solana:sendTransaction] transactionResponse ', transactionResponse)
