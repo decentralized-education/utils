@@ -1,4 +1,5 @@
 import { Connection, Keypair } from "@solana/web3.js";
+import { KeyPair } from "@ton/crypto";
 import { TonClient, TonClient4, WalletContractV4 } from "@ton/ton";
 import { ethers } from "ethers";
 
@@ -36,7 +37,7 @@ export enum ExecutionStatus {
 }
 
 // Multi provider wallet
-export type AnyProviderWallet = ethers.Wallet | WalletContractV4;
+export type AnyProviderWallet = ethers.Wallet | WalletContractV4 | KeyPair;
 
 export interface IWalletProviderCallParameters{
     to?: string;

@@ -1,4 +1,5 @@
 import { Connection, Keypair } from "@solana/web3.js";
+import { KeyPair } from "@ton/crypto";
 import { TonClient, WalletContractV4 } from "@ton/ton";
 import { ethers } from "ethers";
 export interface IWallet {
@@ -29,7 +30,7 @@ export declare enum ExecutionStatus {
     CANCELLED = "cancelled",
     PROCESSING = "processing"
 }
-export type AnyProviderWallet = ethers.Wallet | WalletContractV4;
+export type AnyProviderWallet = ethers.Wallet | WalletContractV4 | KeyPair;
 export interface IWalletProviderCallParameters {
     to?: string;
     data?: string;
