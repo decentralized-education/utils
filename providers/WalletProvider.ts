@@ -37,7 +37,7 @@ export enum ExecutionStatus {
 }
 
 // Multi provider wallet
-export type AnyProviderWallet = ethers.Wallet | WalletContractV4 | KeyPair;
+export type AnyProviderWallet = ethers.Wallet | WalletContractV4 | Keypair;
 
 export interface IWalletProviderCallParameters{
     to?: string;
