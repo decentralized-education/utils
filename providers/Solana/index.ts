@@ -46,11 +46,19 @@ export default class SolanaWalletProvider implements IWalletProvider {
     }): Promise<{ success: boolean; error?: string; signature: string }> {
         const {message} = args;
         const wallet:Keypair = args.wallet as Keypair;
-        const messageBytes = decodeUTF8(message!);
-        const signature = nacl.sign.detached(messageBytes, wallet.secretKey);
-
+        
+        const encodedMessage = new TextEncoder().encode(message);
+        // Because we save it as a string, we need to convert it back to a Uint8Array
         // @ts-ignore
-        console.log(signature, signature.toString(), signature.toString('hex'));
+        const signature = await nacl.sign.detached(encodedMessage,   new Uint8Array( Object.values(wallet._keypair.secretKey)));
+
+        // const result = nacl.sign.detached.verify(
+        //     messageBytes,
+        //     signature,
+        //     publicKey
+        // );
+        // console.log("result ",result)
+
         return {
             success: true,
             // @ts-ignore

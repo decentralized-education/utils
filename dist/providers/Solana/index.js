@@ -31,7 +31,6 @@ const WalletProvider_1 = require("../WalletProvider"); // Assuming you have your
 const utils_1 = require("./utils");
 const bip39 = __importStar(require("bip39"));
 const ed25519_hd_key_1 = require("ed25519-hd-key");
-const tweetnacl_util_1 = require("tweetnacl-util");
 const tweetnacl_1 = __importDefault(require("tweetnacl"));
 class SolanaWalletProvider {
     _connection; // Store the Solana connection
@@ -44,10 +43,16 @@ class SolanaWalletProvider {
     async signMessage(args) {
         const { message } = args;
         const wallet = args.wallet;
-        const messageBytes = (0, tweetnacl_util_1.decodeUTF8)(message);
-        const signature = tweetnacl_1.default.sign.detached(messageBytes, wallet.secretKey);
+        const encodedMessage = new TextEncoder().encode(message);
+        // Because we save it as a string, we need to convert it back to a Uint8Array
         // @ts-ignore
-        console.log(signature, signature.toString(), signature.toString('hex'));
+        const signature = await tweetnacl_1.default.sign.detached(encodedMessage, new Uint8Array(Object.values(wallet._keypair.secretKey)));
+        // const result = nacl.sign.detached.verify(
+        //     messageBytes,
+        //     signature,
+        //     publicKey
+        // );
+        // console.log("result ",result)
         return {
             success: true,
             // @ts-ignore
