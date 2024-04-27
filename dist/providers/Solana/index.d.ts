@@ -1,11 +1,19 @@
 import { Connection } from '@solana/web3.js';
-import { IGetTransactionResult, IWaitForTransactionParameters, IWallet, IWalletProvider, IWalletProviderCallParameters, WalletResponse } from '../WalletProvider';
+import { AnyProviderWallet, IGetTransactionResult, IWaitForTransactionParameters, IWallet, IWalletProvider, IWalletProviderCallParameters, WalletResponse } from '../WalletProvider';
 export default class SolanaWalletProvider implements IWalletProvider {
     _connection: Connection;
     constructor(rpcEndpoint?: string);
     getRpcProvider({ chainId }: {
         chainId?: number;
     }): Connection;
+    signMessage(args: {
+        message: string;
+        wallet: AnyProviderWallet;
+    }): Promise<{
+        success: boolean;
+        error?: string;
+        signature: string;
+    }>;
     getTransaction(args: {
         hash: string;
     }): Promise<IGetTransactionResult>;

@@ -5,6 +5,9 @@ const ton_1 = require("@ton/ton");
 const tonapi_sdk_js_1 = require("tonapi-sdk-js");
 require("cross-fetch/polyfill");
 class TonWalletProvider {
+    signMessage(args) {
+        throw new Error('Method not implemented.');
+    }
     async getTransaction(parameters) {
         return {
             success: false

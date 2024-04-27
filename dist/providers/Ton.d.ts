@@ -1,7 +1,15 @@
-import { IGetTransactionResult, IWallet, IWalletProvider, IWalletProviderCallParameters, SendTransactionResponse, WalletResponse } from './WalletProvider';
+import { AnyProviderWallet, IGetTransactionResult, IWallet, IWalletProvider, IWalletProviderCallParameters, SendTransactionResponse, WalletResponse } from './WalletProvider';
 import { TonClient } from '@ton/ton';
 import 'cross-fetch/polyfill';
 export default class TonWalletProvider implements IWalletProvider {
+    signMessage(args: {
+        message: string;
+        wallet: AnyProviderWallet;
+    }): Promise<{
+        success: boolean;
+        error?: string | undefined;
+        signature: string;
+    }>;
     getTransaction(parameters: {
         hash: string;
     }): Promise<IGetTransactionResult>;

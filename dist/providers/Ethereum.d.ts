@@ -1,8 +1,16 @@
 import { ethers } from "ethers";
-import { IGetTransactionResult, IWaitForTransactionParameters, IWallet, IWalletProvider, IWalletProviderCallParameters, WalletResponse } from "./WalletProvider";
+import { AnyProviderWallet, IGetTransactionResult, IWaitForTransactionParameters, IWallet, IWalletProvider, IWalletProviderCallParameters, WalletResponse } from "./WalletProvider";
 export default class EthereumWalletProvider implements IWalletProvider {
     _chainId: number | null;
     constructor(chainId?: number);
+    signMessage(args: {
+        message: string;
+        wallet: AnyProviderWallet;
+    }): Promise<{
+        success: boolean;
+        error?: string | undefined;
+        signature: string;
+    }>;
     getTransaction(args: {
         hash: string;
     }): Promise<IGetTransactionResult>;

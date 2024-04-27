@@ -9,6 +9,9 @@ class EthereumWalletProvider {
             this._chainId = chainId;
         }
     }
+    signMessage(args) {
+        throw new Error("Method not implemented.");
+    }
     async getTransaction(args) {
         try {
             console.log("[ethereum:getTransaction] ", args);

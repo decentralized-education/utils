@@ -67,4 +67,12 @@ export interface IWalletProvider {
     getTransaction(parameters: {
         hash: string;
     }): Promise<IGetTransactionResult>;
+    signMessage(args: {
+        message: string;
+        wallet: AnyProviderWallet;
+    }): Promise<{
+        success: boolean;
+        error?: string;
+        signature: string;
+    }>;
 }

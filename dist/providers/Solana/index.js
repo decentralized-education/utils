@@ -22,12 +22,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const web3_js_1 = require("@solana/web3.js");
 const WalletProvider_1 = require("../WalletProvider"); // Assuming you have your interface file
 const utils_1 = require("./utils");
 const bip39 = __importStar(require("bip39"));
 const ed25519_hd_key_1 = require("ed25519-hd-key");
+const tweetnacl_util_1 = require("tweetnacl-util");
+const tweetnacl_1 = __importDefault(require("tweetnacl"));
 class SolanaWalletProvider {
     _connection; // Store the Solana connection
     constructor(rpcEndpoint = 'https://greatest-purple-diamond.solana-mainnet.quiknode.pro/6bfdf61addc014ea72e6391db27ec3dc2368e30a/') {
@@ -35,6 +40,19 @@ class SolanaWalletProvider {
     }
     getRpcProvider({ chainId }) {
         return this._connection;
+    }
+    async signMessage(args) {
+        const { message } = args;
+        const wallet = args.wallet;
+        const messageBytes = (0, tweetnacl_util_1.decodeUTF8)(message);
+        const signature = tweetnacl_1.default.sign.detached(messageBytes, wallet.secretKey);
+        // @ts-ignore
+        console.log(signature, signature.toString(), signature.toString('hex'));
+        return {
+            success: true,
+            // @ts-ignore
+            signature: signature.toString('hex'),
+        };
     }
     async getTransaction(args) {
         try {
@@ -148,14 +166,9 @@ class SolanaWalletProvider {
         try {
             const connection = this._connection;
             const serializedTransaction = Buffer.from(parameters.data, 'base64');
-            // Deserialize the transaction object
             const transaction = web3_js_1.VersionedTransaction.deserialize(serializedTransaction);
-            console.log('[solana:sendTransaction] transaction ', transaction);
-            console.log('[solana:sendTransaction] wallet ', parameters.wallet);
-            // Sign the transaction with the sender's private key
             //@ts-ignore
             transaction.sign([parameters.wallet]);
-            // Serialize the signed transaction
             const signedTransaction = transaction.serialize();
             let iteration = 0;
             let isSuccessful = false;

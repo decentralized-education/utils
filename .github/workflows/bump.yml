@@ -1,0 +1,35 @@
+name: Bump and build
+on: [push]
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out repository code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18  # Choose the Node.js version you need
+
+    - name: yarn
+      run: yarn
+
+    - name: yarn
+      run: yarn add typescript
+
+    - name: yarn build
+      run: yarn build
+
+    - uses: EndBug/add-and-commit@v9
+      with:
+        message: 'Build'
+        committer_name: ${{github.actor}}
+        committer_email: ${{github.actor}}@users.noreply.github.com
+
+
+    - name: Bumping version
+      uses: jpb06/bump-package@latest
+      with:
+        should-default-to-patch: true
