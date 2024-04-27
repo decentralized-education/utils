@@ -432,7 +432,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*":
+"@types/node@*", "@types/node@^20.12.7":
   version "20.12.7"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.7.tgz#04080362fa3dd6c5822061aa3124f5c152cff384"
   integrity sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==
@@ -589,10 +589,12 @@ bufferutil@^4.0.1:
     node-gyp-build "^4.3.0"
 
 chaincraft-types@decentralized-education/chaincraft-types:
-  version "1.0.34"
-  resolved "https://codeload.github.com/decentralized-education/chaincraft-types/tar.gz/9a9e0b454c101dcea58b433e7ff5777cfb69b1ee"
+  version "1.0.36"
+  resolved "https://codeload.github.com/decentralized-education/chaincraft-types/tar.gz/93299a156e36232eebb0424e702e397113cfeec5"
   dependencies:
-    typescript "^5.4.4"
+    "@types/node" "^20.12.7"
+    ethers "^5"
+    typescript "^5.4.5"
 
 cipher-base@^1.0.1, cipher-base@^1.0.3:
   version "1.0.4"
@@ -1029,7 +1031,7 @@ typescript@^5.3.3:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.2.tgz#0ae9cebcfae970718474fe0da2c090cad6577372"
   integrity sha512-+2/g0Fds1ERlP6JsakQQDXjZdZMM+rqpamFZJEKh4kwTIn3iDkgKtby0CeNd5ATNZ4Ry1ax15TMx0W2V+miizQ==
 
-typescript@^5.4.4:
+typescript@^5.4.5:
   version "5.4.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.5.tgz#42ccef2c571fdbd0f6718b1d1f5e6e5ef006f611"
   integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
