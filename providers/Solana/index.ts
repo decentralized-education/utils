@@ -13,6 +13,7 @@ import {
     VersionedTransaction,
 } from '@solana/web3.js'
 import {
+    AnyProviderWallet,
     ExecutionStatus,
     IGetTransactionResult,
     IWaitForTransactionParameters,
@@ -25,6 +26,8 @@ import promiseRetry from 'promise-retry'
 import { transactionConfirmationWaiter, transactionSender } from './utils'
 import * as bip39 from 'bip39'
 import { derivePath } from 'ed25519-hd-key'
+import { decodeUTF8 } from 'tweetnacl-util'
+import nacl from 'tweetnacl'
 
 export default class SolanaWalletProvider implements IWalletProvider {
     _connection: Connection // Store the Solana connection
@@ -35,6 +38,24 @@ export default class SolanaWalletProvider implements IWalletProvider {
 
     getRpcProvider({ chainId }: { chainId?: number }) {
         return this._connection
+    }
+
+    async signMessage(args: {
+        message: string
+        wallet: AnyProviderWallet
+    }): Promise<{ success: boolean; error?: string; signature: string }> {
+        const {message} = args;
+        const wallet:Keypair = args.wallet as Keypair;
+        const messageBytes = decodeUTF8(message!);
+        const signature = nacl.sign.detached(messageBytes, wallet.secretKey);
+
+        // @ts-ignore
+        console.log(signature, signature.toString(), signature.toString('hex'));
+        return {
+            success: true,
+            // @ts-ignore
+            signature: signature.toString('hex'),
+        }
     }
 
     async getTransaction(args: { hash: string }): Promise<IGetTransactionResult> {

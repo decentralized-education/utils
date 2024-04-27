@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import {
+  AnyProviderWallet,
   ExecutionStatus,
   IGetTransactionResult,
   IWaitForTransactionParameters,
@@ -15,6 +16,9 @@ export default class EthereumWalletProvider implements IWalletProvider {
     if (chainId) {
       this._chainId = chainId;
     }
+  }
+  signMessage(args: { message: string; wallet: AnyProviderWallet; }): Promise<{ success: boolean; error?: string | undefined; signature: string; }> {
+    throw new Error("Method not implemented.");
   }
   async getTransaction(args: { hash: string }): Promise<IGetTransactionResult> {
     try {

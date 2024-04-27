@@ -1,11 +1,14 @@
 import { ethers } from 'ethers'
-import { IGetTransactionResult, IWallet, IWalletProvider, IWalletProviderCallParameters, SendTransactionResponse, WalletResponse } from './WalletProvider'
+import { AnyProviderWallet, IGetTransactionResult, IWallet, IWalletProvider, IWalletProviderCallParameters, SendTransactionResponse, WalletResponse } from './WalletProvider'
 import { mnemonicNew, mnemonicToPrivateKey } from '@ton/crypto'
 import { Address, TonClient, WalletContractV4 } from '@ton/ton'
 import { HttpClient, Api } from 'tonapi-sdk-js';
 import 'cross-fetch/polyfill';
 
 export default class TonWalletProvider implements IWalletProvider {
+    signMessage(args: { message: string; wallet: AnyProviderWallet; }): Promise<{ success: boolean; error?: string | undefined; signature: string; }> {
+        throw new Error('Method not implemented.');
+    }
     async getTransaction(parameters:{hash: string}):Promise<IGetTransactionResult>{
         return {
             success: false

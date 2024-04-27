@@ -72,5 +72,6 @@ export interface IWalletProvider {
     createWalletFromDatabase(wallet: IWallet): Promise<WalletResponse<IWallet>>;
     waitForTransaction(parameters:IWaitForTransactionParameters):Promise<{success: boolean, error?: string}>;
     getTransaction(parameters:{hash: string}): Promise<IGetTransactionResult>
+    signMessage(args:{message:string, wallet: AnyProviderWallet }):Promise<{success:boolean, error?: string, signature: string}>;
 }
 
