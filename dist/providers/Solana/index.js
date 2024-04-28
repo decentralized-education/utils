@@ -178,7 +178,7 @@ class SolanaWalletProvider {
             let iteration = 0;
             let isSuccessful = false;
             let transactionResponse = null;
-            while (iteration < 10) {
+            while (iteration < 30) {
                 iteration++;
                 console.log('[solana:sendTransaction] sending transaction: ', iteration);
                 transactionResponse = await (0, utils_1.transactionSender)({
