@@ -28,7 +28,7 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
 
     const txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
 
-    console.log('[transactionSender ] txId ', txid)
+    console.log('[transactionSender] txId ', txid)
 
     const controller = new AbortController()
     const abortSignal = controller.signal
@@ -142,10 +142,22 @@ export async function transactionConfirmationWaiter({
     } catch (e) {
         if (e instanceof TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null
-            return null
+            // return null
         } else {
             // invalid state from web3.js
-            throw e
+            // throw e
+        }
+
+        try{
+            const response = await connection.getTransaction(txHash, {
+                commitment: 'confirmed',
+                maxSupportedTransactionVersion: 0,
+            })
+            if(response){
+                return response
+            }
+        }catch(error){
+            console.log("solana retry error ",error)
         }
     } finally {
         controller.abort()
