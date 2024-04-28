@@ -6,7 +6,7 @@ import {
     VersionedTransactionResponse,
 } from '@solana/web3.js'
 import promiseRetry from 'promise-retry'
-import bip39 from 'bip39'
+import * as bip39 from 'bip39'
 
 const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 type TransactionSenderArgs = {
