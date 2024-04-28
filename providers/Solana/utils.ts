@@ -34,28 +34,45 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
     const abortSignal = controller.signal
 
     const abortableResender = async () => {
-        while (true) {
+        let i =0;
+        while (i< 15) {
             console.log('waiting')
             await wait(2_000)
             if (abortSignal.aborted) return
             try {
-                console.log('waiting... sendRawTransaction')
+                console.log('waiting... sendRawTransaction ',txBuffer,SEND_OPTIONS)
                 await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
+                console.log('tx sent...')
             } catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`)
             }
+            i++;
+        }
+        if(i>=15){
+            throw new Error('Transaction resend limit exceeded')
         }
     }
 
     try {
         await abortableResender()
     } catch (e) {
+        console.log("solana error ",e)
         if (e instanceof TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null
-            return null
         } else {
             // invalid state from web3.js
-            throw e
+        }
+
+        try{
+            const response = await connection.getTransaction(txid, {
+                commitment: 'confirmed',
+                maxSupportedTransactionVersion: 0,
+            })
+            if(response){
+                return response
+            }
+        }catch(error){
+            console.log("solana retry error ",error)
         }
     } finally {
         controller.abort()

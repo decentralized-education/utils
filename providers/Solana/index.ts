@@ -199,7 +199,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
             let isSuccessful = false
             let transactionResponse: VersionedTransactionResponse | null = null
 
-            while (iteration < 10) {
+            while (iteration < 30) {
                 iteration++
                 console.log('[solana:sendTransaction] sending transaction: ', iteration)
                 transactionResponse = await transactionSender({
