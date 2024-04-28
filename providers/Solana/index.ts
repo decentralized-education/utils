@@ -211,6 +211,10 @@ export default class SolanaWalletProvider implements IWalletProvider {
                 if (transactionResponse && transactionResponse?.meta?.err == null) {
                     console.log('[solana:sendTransaction] transaction confirmed!')
                     isSuccessful = true
+
+                    return {
+                        success: true,
+                    }
                     break
                 } else {
                     console.error(`[solana:sendTransaction] error transaction failed #${iteration}`)

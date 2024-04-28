@@ -37,35 +37,53 @@ const SEND_OPTIONS = {
 async function transactionSender({ connection, txBuffer }) {
     console.log('transactionSenderAndConfirmationWaiter sending');
     const txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
-    console.log('[transactionSender ] txId ', txid);
+    console.log('[transactionSender] txId ', txid);
     const controller = new AbortController();
     const abortSignal = controller.signal;
     const abortableResender = async () => {
-        while (true) {
+        let i = 0;
+        while (i < 15) {
             console.log('waiting');
             await wait(2_000);
             if (abortSignal.aborted)
                 return;
             try {
-                console.log('waiting... sendRawTransaction');
+                console.log('waiting... sendRawTransaction ', txBuffer, SEND_OPTIONS);
                 await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
+                console.log('tx sent...');
+                return;
             }
             catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`);
             }
+            i++;
+        }
+        if (i >= 15) {
+            throw new Error('Transaction resend limit exceeded');
         }
     };
     try {
         await abortableResender();
     }
     catch (e) {
+        console.log("solana error ", e);
         if (e instanceof web3_js_1.TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null
-            return null;
         }
         else {
             // invalid state from web3.js
-            throw e;
+        }
+        try {
+            const response = await connection.getTransaction(txid, {
+                commitment: 'confirmed',
+                maxSupportedTransactionVersion: 0,
+            });
+            if (response) {
+                return response;
+            }
+        }
+        catch (error) {
+            console.log("solana retry error ", error);
         }
     }
     finally {
@@ -122,11 +140,23 @@ async function transactionConfirmationWaiter({ connection, txHash, blockhashWith
     catch (e) {
         if (e instanceof web3_js_1.TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null
-            return null;
+            // return null
         }
         else {
             // invalid state from web3.js
-            throw e;
+            // throw e
+        }
+        try {
+            const response = await connection.getTransaction(txHash, {
+                commitment: 'confirmed',
+                maxSupportedTransactionVersion: 0,
+            });
+            if (response) {
+                return response;
+            }
+        }
+        catch (error) {
+            console.log("solana retry error ", error);
         }
     }
     finally {

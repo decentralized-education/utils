@@ -43,6 +43,7 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
                 console.log('waiting... sendRawTransaction ',txBuffer,SEND_OPTIONS)
                 await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
                 console.log('tx sent...')
+                return;
             } catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`)
             }
