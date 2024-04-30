@@ -26,13 +26,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSolanaBalance = exports.generateMnemonic = exports.transactionConfirmationWaiter = exports.transactionSender = void 0;
+exports.getSolanaBalance = exports.generateBaseKeypair = exports.generateMnemonic = exports.transactionConfirmationWaiter = exports.transactionSender = void 0;
 const web3_js_1 = require("@solana/web3.js");
 const promise_retry_1 = __importDefault(require("promise-retry"));
 const bip39 = __importStar(require("bip39"));
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 const SEND_OPTIONS = {
-    skipPreflight: true
+    skipPreflight: true,
 };
 async function transactionSender({ connection, txBuffer }) {
     console.log('transactionSenderAndConfirmationWaiter sending');
@@ -66,7 +66,7 @@ async function transactionSender({ connection, txBuffer }) {
         await abortableResender();
     }
     catch (e) {
-        console.log("solana error ", e);
+        console.log('solana error ', e);
         if (e instanceof web3_js_1.TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null
         }
@@ -83,7 +83,7 @@ async function transactionSender({ connection, txBuffer }) {
             }
         }
         catch (error) {
-            console.log("solana retry error ", error);
+            console.log('solana retry error ', error);
         }
     }
     finally {
@@ -156,7 +156,7 @@ async function transactionConfirmationWaiter({ connection, txHash, blockhashWith
             }
         }
         catch (error) {
-            console.log("solana retry error ", error);
+            console.log('solana retry error ', error);
         }
     }
     finally {
@@ -184,6 +184,10 @@ const generateMnemonic = () => {
     return bip39.generateMnemonic(128);
 };
 exports.generateMnemonic = generateMnemonic;
+const generateBaseKeypair = () => {
+    return web3_js_1.Keypair.generate();
+};
+exports.generateBaseKeypair = generateBaseKeypair;
 //TEMP UNTIL WE HAVE A SOLANA PROVIDER
 async function getSolanaBalance(walletPublicKey) {
     try {

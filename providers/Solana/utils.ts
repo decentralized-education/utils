@@ -1,6 +1,7 @@
 import {
     BlockhashWithExpiryBlockHeight,
     Connection,
+    Keypair,
     PublicKey,
     TransactionExpiredBlockheightExceededError,
     VersionedTransactionResponse,
@@ -20,7 +21,7 @@ type TransactionConfirmationWaiterArgs = {
 }
 
 const SEND_OPTIONS = {
-    skipPreflight: true
+    skipPreflight: true,
 }
 
 export async function transactionSender({ connection, txBuffer }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
@@ -34,22 +35,22 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
     const abortSignal = controller.signal
 
     const abortableResender = async () => {
-        let i =0;
-        while (i< 15) {
+        let i = 0
+        while (i < 15) {
             console.log('waiting')
             await wait(2_000)
             if (abortSignal.aborted) return
             try {
-                console.log('waiting... sendRawTransaction ',txBuffer,SEND_OPTIONS)
+                console.log('waiting... sendRawTransaction ', txBuffer, SEND_OPTIONS)
                 await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
                 console.log('tx sent...')
-                return;
+                return
             } catch (e) {
                 console.warn(`Failed to resend transaction: ${e}`)
             }
-            i++;
+            i++
         }
-        if(i>=15){
+        if (i >= 15) {
             throw new Error('Transaction resend limit exceeded')
         }
     }
@@ -57,23 +58,23 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
     try {
         await abortableResender()
     } catch (e) {
-        console.log("solana error ",e)
+        console.log('solana error ', e)
         if (e instanceof TransactionExpiredBlockheightExceededError) {
             // we consume this error and getTransaction would return null
         } else {
             // invalid state from web3.js
         }
 
-        try{
+        try {
             const response = await connection.getTransaction(txid, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
             })
-            if(response){
+            if (response) {
                 return response
             }
-        }catch(error){
-            console.log("solana retry error ",error)
+        } catch (error) {
+            console.log('solana retry error ', error)
         }
     } finally {
         controller.abort()
@@ -149,16 +150,16 @@ export async function transactionConfirmationWaiter({
             // throw e
         }
 
-        try{
+        try {
             const response = await connection.getTransaction(txHash, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
             })
-            if(response){
+            if (response) {
                 return response
             }
-        }catch(error){
-            console.log("solana retry error ",error)
+        } catch (error) {
+            console.log('solana retry error ', error)
         }
     } finally {
         controller.abort()
@@ -188,6 +189,10 @@ export async function transactionConfirmationWaiter({
 
 export const generateMnemonic = (): string => {
     return bip39.generateMnemonic(128)
+}
+
+export const generateBaseKeypair = () => {
+    return Keypair.generate()
 }
 
 //TEMP UNTIL WE HAVE A SOLANA PROVIDER
