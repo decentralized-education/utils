@@ -165,7 +165,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
                 replaceRecentBlockhash: true,
             })
             if (!simulationResult || simulationResult?.value?.err) {
-                console.log('[solana:simulate] error', simulationResult?.value?.err)
+                console.log('[solana:simulate] error', simulationResult, simulationResult?.value?.err)
                 return {
                     success: false,
                 }
