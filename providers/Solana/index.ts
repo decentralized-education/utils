@@ -11,6 +11,7 @@ import {
     TransactionExpiredBlockheightExceededError,
     VersionedTransactionResponse,
     VersionedTransaction,
+    LAMPORTS_PER_SOL,
 } from '@solana/web3.js'
 import {
     AnyProviderWallet,
@@ -60,6 +61,43 @@ export default class SolanaWalletProvider implements IWalletProvider {
             success: true,
             // @ts-ignore
             signature: signature.toString('hex'),
+        }
+    }
+
+    async generateTransaction(recipientAddress: string, senderAddress: string, amount: number): Promise<any> {
+        try {
+            const recipientPublicKey = new PublicKey(recipientAddress)
+            const senderPublicKey = new PublicKey(senderAddress)
+
+            const { blockhash } = await this._connection.getLatestBlockhash()
+
+            const transaction = new Transaction().add(
+                SystemProgram.transfer({
+                    fromPubkey: senderPublicKey,
+                    toPubkey: recipientPublicKey,
+                    lamports: amount * LAMPORTS_PER_SOL,
+                })
+            )
+
+            console.log('BLOCKHASH IS ' + blockhash)
+
+            transaction.recentBlockhash = blockhash
+            transaction.feePayer = senderPublicKey
+
+            const serializedTransaction = transaction.serialize({ requireAllSignatures: false }).toString('base64')
+
+            console.log('[solana:generateTransaction] serializedTransaction ', serializedTransaction)
+
+            return {
+                success: true,
+                data: serializedTransaction,
+            }
+        } catch (error) {
+            console.error('[solana:generateTransaction] error: ', error)
+            return {
+                success: false,
+                error: (error as Error).message,
+            }
         }
     }
 
@@ -245,8 +283,8 @@ export default class SolanaWalletProvider implements IWalletProvider {
                 success: true,
                 wallet: {
                     address: keypair.publicKey.toString(),
-                    privateKey: privateKey, // Store the private key securely
-                    providerWallet: keypair, // The actual Solana Keypair object
+                    privateKey: privateKey,
+                    providerWallet: keypair,
                 },
             }
         } catch (e) {

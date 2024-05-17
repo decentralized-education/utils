@@ -195,6 +195,16 @@ export const generateBaseKeypair = () => {
     return Keypair.generate()
 }
 
+export const isValidSolanaAddress =(address: string): boolean => {
+    try {
+        const publicKey = new PublicKey(address)
+        return publicKey.toBase58() === address
+    } catch (error) {
+        return false
+    }
+}
+
+
 //TEMP UNTIL WE HAVE A SOLANA PROVIDER
 export async function getSolanaBalance(walletPublicKey: string): Promise<number | null> {
     try {

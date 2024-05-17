@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSolanaBalance = exports.generateBaseKeypair = exports.generateMnemonic = exports.transactionConfirmationWaiter = exports.transactionSender = void 0;
+exports.getSolanaBalance = exports.isValidSolanaAddress = exports.generateBaseKeypair = exports.generateMnemonic = exports.transactionConfirmationWaiter = exports.transactionSender = void 0;
 const web3_js_1 = require("@solana/web3.js");
 const promise_retry_1 = __importDefault(require("promise-retry"));
 const bip39 = __importStar(require("bip39"));
@@ -188,6 +188,16 @@ const generateBaseKeypair = () => {
     return web3_js_1.Keypair.generate();
 };
 exports.generateBaseKeypair = generateBaseKeypair;
+const isValidSolanaAddress = (address) => {
+    try {
+        const publicKey = new web3_js_1.PublicKey(address);
+        return publicKey.toBase58() === address;
+    }
+    catch (error) {
+        return false;
+    }
+};
+exports.isValidSolanaAddress = isValidSolanaAddress;
 //TEMP UNTIL WE HAVE A SOLANA PROVIDER
 async function getSolanaBalance(walletPublicKey) {
     try {

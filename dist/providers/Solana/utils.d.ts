@@ -13,5 +13,6 @@ export declare function transactionSender({ connection, txBuffer }: TransactionS
 export declare function transactionConfirmationWaiter({ connection, txHash, blockhashWithExpiryBlockHeight, }: TransactionConfirmationWaiterArgs): Promise<VersionedTransactionResponse | null>;
 export declare const generateMnemonic: () => string;
 export declare const generateBaseKeypair: () => Keypair;
+export declare const isValidSolanaAddress: (address: string) => boolean;
 export declare function getSolanaBalance(walletPublicKey: string): Promise<number | null>;
 export {};

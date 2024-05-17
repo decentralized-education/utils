@@ -59,6 +59,34 @@ class SolanaWalletProvider {
             signature: signature.toString('hex'),
         };
     }
+    async generateTransaction(recipientAddress, senderAddress, amount) {
+        try {
+            const recipientPublicKey = new web3_js_1.PublicKey(recipientAddress);
+            const senderPublicKey = new web3_js_1.PublicKey(senderAddress);
+            const { blockhash } = await this._connection.getLatestBlockhash();
+            const transaction = new web3_js_1.Transaction().add(web3_js_1.SystemProgram.transfer({
+                fromPubkey: senderPublicKey,
+                toPubkey: recipientPublicKey,
+                lamports: amount * web3_js_1.LAMPORTS_PER_SOL,
+            }));
+            console.log('BLOCKHASH IS ' + blockhash);
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = senderPublicKey;
+            const serializedTransaction = transaction.serialize({ requireAllSignatures: false }).toString('base64');
+            console.log('[solana:generateTransaction] serializedTransaction ', serializedTransaction);
+            return {
+                success: true,
+                data: serializedTransaction,
+            };
+        }
+        catch (error) {
+            console.error('[solana:generateTransaction] error: ', error);
+            return {
+                success: false,
+                error: error.message,
+            };
+        }
+    }
     async getTransaction(args) {
         try {
             console.log('[solana:getTransaction] ', args);
@@ -224,8 +252,8 @@ class SolanaWalletProvider {
                 success: true,
                 wallet: {
                     address: keypair.publicKey.toString(),
-                    privateKey: privateKey, // Store the private key securely
-                    providerWallet: keypair, // The actual Solana Keypair object
+                    privateKey: privateKey,
+                    providerWallet: keypair,
                 },
             };
         }

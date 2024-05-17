@@ -14,6 +14,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
         error?: string;
         signature: string;
     }>;
+    generateTransaction(recipientAddress: string, senderAddress: string, amount: number): Promise<any>;
     getTransaction(args: {
         hash: string;
     }): Promise<IGetTransactionResult>;
