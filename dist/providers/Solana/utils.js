@@ -42,9 +42,9 @@ async function transactionSender({ connection, txBuffer }) {
     const abortSignal = controller.signal;
     const abortableResender = async () => {
         let i = 0;
-        while (i < 15) {
+        while (i < 10) {
             console.log('waiting');
-            await wait(2_000);
+            await wait(3_000);
             if (abortSignal.aborted)
                 return;
             try {
@@ -101,7 +101,7 @@ async function transactionSender({ connection, txBuffer }) {
         }
         return response;
     }, {
-        retries: 5,
+        retries: 3,
         minTimeout: 1e3,
     });
     return response;

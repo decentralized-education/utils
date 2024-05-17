@@ -36,7 +36,7 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
 
     const abortableResender = async () => {
         let i = 0
-        while (i < 15) {
+        while (i < 10) {
             console.log('waiting')
             await wait(2_000)
             if (abortSignal.aborted) return

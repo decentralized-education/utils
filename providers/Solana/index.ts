@@ -40,17 +40,14 @@ export default class SolanaWalletProvider implements IWalletProvider {
         return this._connection
     }
 
-    async signMessage(args: {
-        message: string
-        wallet: AnyProviderWallet
-    }): Promise<{ success: boolean; error?: string; signature: string }> {
-        const {message} = args;
-        const wallet:Keypair = args.wallet as Keypair;
-        
-        const encodedMessage = new TextEncoder().encode(message);
+    async signMessage(args: { message: string; wallet: AnyProviderWallet }): Promise<{ success: boolean; error?: string; signature: string }> {
+        const { message } = args
+        const wallet: Keypair = args.wallet as Keypair
+
+        const encodedMessage = new TextEncoder().encode(message)
         // Because we save it as a string, we need to convert it back to a Uint8Array
         // @ts-ignore
-        const signature = await nacl.sign.detached(encodedMessage,   new Uint8Array( Object.values(wallet._keypair.secretKey)));
+        const signature = await nacl.sign.detached(encodedMessage, new Uint8Array(Object.values(wallet._keypair.secretKey)))
 
         // const result = nacl.sign.detached.verify(
         //     messageBytes,
@@ -199,7 +196,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
             let isSuccessful = false
             let transactionResponse: VersionedTransactionResponse | null = null
 
-            while (iteration < 30) {
+            while (iteration < 15) {
                 iteration++
                 console.log('[solana:sendTransaction] sending transaction: ', iteration)
                 transactionResponse = await transactionSender({
