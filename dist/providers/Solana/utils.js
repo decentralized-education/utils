@@ -44,7 +44,7 @@ async function transactionSender({ connection, txBuffer }) {
         let i = 0;
         while (i < 10) {
             console.log('waiting');
-            await wait(3_000);
+            await wait(2_000);
             if (abortSignal.aborted)
                 return;
             try {
@@ -101,7 +101,7 @@ async function transactionSender({ connection, txBuffer }) {
         }
         return response;
     }, {
-        retries: 3,
+        retries: 5,
         minTimeout: 1e3,
     });
     return response;
