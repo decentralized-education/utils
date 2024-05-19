@@ -172,17 +172,34 @@ class SolanaWalletProvider {
         console.log('[solana:simulate]');
         try {
             const connection = this._connection;
+            if (!parameters.data) {
+                throw new Error('No data provided in parameters');
+            }
             const swapTransactionBuf = Buffer.from(parameters.data, 'base64');
-            var transaction = web3_js_1.VersionedTransaction.deserialize(swapTransactionBuf);
+            let transaction;
+            try {
+                transaction = web3_js_1.VersionedTransaction.deserialize(swapTransactionBuf);
+            }
+            catch (deserializationError) {
+                console.error('[solana:simulate] Transaction deserialization error', deserializationError);
+                return {
+                    success: false,
+                    error: 'Transaction deserialization failed',
+                };
+            }
             const simulationResult = await connection.simulateTransaction(transaction, {
                 replaceRecentBlockhash: true,
             });
-            if (!simulationResult || simulationResult?.value?.err) {
-                console.log('[solana:simulate] error', simulationResult, simulationResult?.value?.err);
+            if (!simulationResult || simulationResult.value.err) {
+                console.log('[solana:simulate] Simulation error', simulationResult, simulationResult?.value?.err);
                 return {
                     success: false,
+                    error: simulationResult.value.err ? JSON.stringify(simulationResult.value.err) : 'Unknown simulation error',
                 };
             }
+            return {
+                success: true,
+            };
         }
         catch (e) {
             console.error('[solana:simulate] error', e);
@@ -191,9 +208,6 @@ class SolanaWalletProvider {
                 error: e.message,
             };
         }
-        return {
-            success: true,
-        };
     }
     async sendTransaction(parameters) {
         try {
@@ -206,7 +220,7 @@ class SolanaWalletProvider {
             let iteration = 0;
             let isSuccessful = false;
             let transactionResponse = null;
-            while (iteration < 15) {
+            while (iteration < 5) {
                 iteration++;
                 console.log('[solana:sendTransaction] sending transaction: ', iteration);
                 transactionResponse = await (0, utils_1.transactionSender)({

@@ -188,34 +188,53 @@ export default class SolanaWalletProvider implements IWalletProvider {
         }
     }
 
-    async simulate(parameters: IWalletProviderCallParameters) {
-        console.log('[solana:simulate]')
+    async simulate(parameters: IWalletProviderCallParameters): Promise<any> {
+        console.log('[solana:simulate]');
+
         try {
-            const connection = this._connection
+            const connection = this._connection;
 
-            const swapTransactionBuf = Buffer.from(parameters.data!, 'base64')
-            var transaction = VersionedTransaction.deserialize(swapTransactionBuf)
+            if (!parameters.data) {
+                throw new Error('No data provided in parameters');
+            }
 
-            const simulationResult = await connection.simulateTransaction(transaction, {
-                replaceRecentBlockhash: true,
-            })
-            if (!simulationResult || simulationResult?.value?.err) {
-                console.log('[solana:simulate] error', simulationResult, simulationResult?.value?.err)
+            const swapTransactionBuf = Buffer.from(parameters.data, 'base64');
+            let transaction: VersionedTransaction;
+
+            try {
+                transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+            } catch (deserializationError) {
+                console.error('[solana:simulate] Transaction deserialization error', deserializationError);
                 return {
                     success: false,
-                }
+                    error: 'Transaction deserialization failed',
+                };
             }
+            
+            const simulationResult = await connection.simulateTransaction(transaction, {
+                replaceRecentBlockhash: true,
+            });
+
+            if (!simulationResult || simulationResult.value.err) {
+                console.log('[solana:simulate] Simulation error', simulationResult, simulationResult?.value?.err);
+                return {
+                    success: false,
+                    error: simulationResult.value.err ? JSON.stringify(simulationResult.value.err) : 'Unknown simulation error',
+                };
+            }
+
+            return {
+                success: true,
+            };
         } catch (e) {
-            console.error('[solana:simulate] error', e)
+            console.error('[solana:simulate] error', e);
             return {
                 success: false,
                 error: (e as Error).message,
-            }
-        }
-        return {
-            success: true,
+            };
         }
     }
+
 
     async sendTransaction(parameters: IWalletProviderCallParameters): Promise<WalletResponse<string>> {
         try {
@@ -234,7 +253,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
             let isSuccessful = false
             let transactionResponse: VersionedTransactionResponse | null = null
 
-            while (iteration < 15) {
+            while (iteration < 5) {
                 iteration++
                 console.log('[solana:sendTransaction] sending transaction: ', iteration)
                 transactionResponse = await transactionSender({

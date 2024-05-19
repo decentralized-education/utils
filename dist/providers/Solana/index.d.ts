@@ -25,13 +25,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
         success: boolean;
         error?: undefined;
     }>;
-    simulate(parameters: IWalletProviderCallParameters): Promise<{
-        success: boolean;
-        error?: undefined;
-    } | {
-        success: boolean;
-        error: string;
-    }>;
+    simulate(parameters: IWalletProviderCallParameters): Promise<any>;
     sendTransaction(parameters: IWalletProviderCallParameters): Promise<WalletResponse<string>>;
     createWalletFromPrivateKey(privateKey: string): Promise<WalletResponse<IWallet>>;
     createWallet(): Promise<WalletResponse<IWallet>>;

@@ -22,84 +22,58 @@ type TransactionConfirmationWaiterArgs = {
 
 const SEND_OPTIONS = {
     skipPreflight: true,
+      maxRetries: 2
 }
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 1500;
+
 export async function transactionSender({ connection, txBuffer }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
-    console.log('transactionSenderAndConfirmationWaiter sending')
+    console.log('[solana:sendTransaction] transactionSender')
 
-    const txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
+    let tryAgain = true
+    let maxTriesCounter = 0
+    let objSignatureStatusResult: any = null
+    let txid: string | undefined
 
-    console.log('[transactionSender] txId ', txid)
+    while (tryAgain) {
+        try {
+            maxTriesCounter++
+            txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
+       
+            await new Promise((r) => setTimeout(r, RETRY_DELAY))
 
-    const controller = new AbortController()
-    const abortSignal = controller.signal
+            const result = await connection.getSignatureStatus(txid, {
+                searchTransactionHistory: true,
+            })
 
-    const abortableResender = async () => {
-        let i = 0
-        while (i < 10) {
-            console.log('waiting')
-            await wait(2_000)
-            if (abortSignal.aborted) return
-            try {
-                console.log('waiting... sendRawTransaction ', txBuffer, SEND_OPTIONS)
-                await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
-                console.log('tx sent...')
-                return
-            } catch (e) {
-                console.warn(`Failed to resend transaction: ${e}`)
+            objSignatureStatusResult = JSON.parse(JSON.stringify(result))
+            if (objSignatureStatusResult.value !== null) tryAgain = false
+            if (maxTriesCounter > MAX_RETRIES) tryAgain = false
+        } catch (e) {
+            console.log('solana error ', e)
+            if (e instanceof TransactionExpiredBlockheightExceededError) {
+                console.log('TransactionExpiredBlockheightExceededError')
+            } else {
+                console.log('solana error ', e)
             }
-            i++
-        }
-        if (i >= 15) {
-            throw new Error('Transaction resend limit exceeded')
         }
     }
 
-    try {
-        await abortableResender()
-    } catch (e) {
-        console.log('solana error ', e)
-        if (e instanceof TransactionExpiredBlockheightExceededError) {
-            // we consume this error and getTransaction would return null
-        } else {
-            // invalid state from web3.js
-        }
-
+    if (txid && objSignatureStatusResult && objSignatureStatusResult.value) {
         try {
             const response = await connection.getTransaction(txid, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
             })
-            if (response) {
-                return response
-            }
-        } catch (error) {
-            console.log('solana retry error ', error)
+            return response as VersionedTransactionResponse
+        } catch (e) {
+            console.log('solana error when getting transaction', e)
+            throw e
         }
-    } finally {
-        controller.abort()
     }
 
-    // in case rpc is not synced yet, we add some retries
-    const response = promiseRetry(
-        async (retry: any) => {
-            console.log('promise retry...')
-            const response = await connection.getTransaction(txid, {
-                commitment: 'confirmed',
-                maxSupportedTransactionVersion: 0,
-            })
-            if (!response) {
-                retry(response)
-            }
-            return response
-        },
-        {
-            retries: 5,
-            minTimeout: 1e3,
-        }
-    )
-
-    return response
+    return null
 }
 
 export async function transactionConfirmationWaiter({

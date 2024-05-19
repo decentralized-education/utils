@@ -33,78 +33,54 @@ const bip39 = __importStar(require("bip39"));
 const wait = (time) => new Promise((resolve) => setTimeout(resolve, time));
 const SEND_OPTIONS = {
     skipPreflight: true,
+    maxRetries: 2
 };
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 1500;
 async function transactionSender({ connection, txBuffer }) {
-    console.log('transactionSenderAndConfirmationWaiter sending');
-    const txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
-    console.log('[transactionSender] txId ', txid);
-    const controller = new AbortController();
-    const abortSignal = controller.signal;
-    const abortableResender = async () => {
-        let i = 0;
-        while (i < 10) {
-            console.log('waiting');
-            await wait(2_000);
-            if (abortSignal.aborted)
-                return;
-            try {
-                console.log('waiting... sendRawTransaction ', txBuffer, SEND_OPTIONS);
-                await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
-                console.log('tx sent...');
-                return;
-            }
-            catch (e) {
-                console.warn(`Failed to resend transaction: ${e}`);
-            }
-            i++;
+    console.log('[solana:sendTransaction] transactionSender');
+    let tryAgain = true;
+    let maxTriesCounter = 0;
+    let objSignatureStatusResult = null;
+    let txid;
+    while (tryAgain) {
+        try {
+            maxTriesCounter++;
+            txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
+            await new Promise((r) => setTimeout(r, RETRY_DELAY));
+            const result = await connection.getSignatureStatus(txid, {
+                searchTransactionHistory: true,
+            });
+            objSignatureStatusResult = JSON.parse(JSON.stringify(result));
+            if (objSignatureStatusResult.value !== null)
+                tryAgain = false;
+            if (maxTriesCounter > MAX_RETRIES)
+                tryAgain = false;
         }
-        if (i >= 15) {
-            throw new Error('Transaction resend limit exceeded');
+        catch (e) {
+            console.log('solana error ', e);
+            if (e instanceof web3_js_1.TransactionExpiredBlockheightExceededError) {
+                console.log('TransactionExpiredBlockheightExceededError');
+            }
+            else {
+                console.log('solana error ', e);
+            }
         }
-    };
-    try {
-        await abortableResender();
     }
-    catch (e) {
-        console.log('solana error ', e);
-        if (e instanceof web3_js_1.TransactionExpiredBlockheightExceededError) {
-            // we consume this error and getTransaction would return null
-        }
-        else {
-            // invalid state from web3.js
-        }
+    if (txid && objSignatureStatusResult && objSignatureStatusResult.value) {
         try {
             const response = await connection.getTransaction(txid, {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
             });
-            if (response) {
-                return response;
-            }
+            return response;
         }
-        catch (error) {
-            console.log('solana retry error ', error);
+        catch (e) {
+            console.log('solana error when getting transaction', e);
+            throw e;
         }
     }
-    finally {
-        controller.abort();
-    }
-    // in case rpc is not synced yet, we add some retries
-    const response = (0, promise_retry_1.default)(async (retry) => {
-        console.log('promise retry...');
-        const response = await connection.getTransaction(txid, {
-            commitment: 'confirmed',
-            maxSupportedTransactionVersion: 0,
-        });
-        if (!response) {
-            retry(response);
-        }
-        return response;
-    }, {
-        retries: 5,
-        minTimeout: 1e3,
-    });
-    return response;
+    return null;
 }
 exports.transactionSender = transactionSender;
 async function transactionConfirmationWaiter({ connection, txHash, blockhashWithExpiryBlockHeight, }) {
