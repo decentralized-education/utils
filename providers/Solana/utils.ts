@@ -7,7 +7,7 @@ import {
     VersionedTransactionResponse,
 } from '@solana/web3.js'
 import promiseRetry from 'promise-retry'
-import * as bip39 from 'bip39'
+import bip39 from 'bip39'
 
 const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 type TransactionSenderArgs = {
@@ -22,11 +22,11 @@ type TransactionConfirmationWaiterArgs = {
 
 const SEND_OPTIONS = {
     skipPreflight: true,
-      maxRetries: 2
+    maxRetries: 2,
 }
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY = 1500;
+const MAX_RETRIES = 5
+const RETRY_DELAY = 1500
 
 export async function transactionSender({ connection, txBuffer }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
     console.log('[solana:sendTransaction] transactionSender')
@@ -40,7 +40,7 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
         try {
             maxTriesCounter++
             txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
-       
+
             await new Promise((r) => setTimeout(r, RETRY_DELAY))
 
             const result = await connection.getSignatureStatus(txid, {
@@ -169,7 +169,7 @@ export const generateBaseKeypair = () => {
     return Keypair.generate()
 }
 
-export const isValidSolanaAddress =(address: string): boolean => {
+export const isValidSolanaAddress = (address: string): boolean => {
     try {
         const publicKey = new PublicKey(address)
         return publicKey.toBase58() === address
@@ -177,7 +177,6 @@ export const isValidSolanaAddress =(address: string): boolean => {
         return false
     }
 }
-
 
 //TEMP UNTIL WE HAVE A SOLANA PROVIDER
 export async function getSolanaBalance(walletPublicKey: string): Promise<number | null> {
