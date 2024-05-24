@@ -1,4 +1,4 @@
-import { Connection } from '@solana/web3.js';
+import { Connection, Keypair } from '@solana/web3.js';
 import { AnyProviderWallet, IGetTransactionResult, IWaitForTransactionParameters, IWallet, IWalletProvider, IWalletProviderCallParameters, WalletResponse } from '../WalletProvider';
 export default class SolanaWalletProvider implements IWalletProvider {
     _connection: Connection;
@@ -25,7 +25,9 @@ export default class SolanaWalletProvider implements IWalletProvider {
         success: boolean;
         error?: undefined;
     }>;
+    sign(parameters: IWalletProviderCallParameters, base?: Keypair): Promise<any>;
     simulate(parameters: IWalletProviderCallParameters): Promise<any>;
+    runLimitOrder(wallet: Keypair, base: Keypair, tx: string): Promise<any>;
     sendTransaction(parameters: IWalletProviderCallParameters): Promise<WalletResponse<string>>;
     createWalletFromPrivateKey(privateKey: string): Promise<WalletResponse<IWallet>>;
     createWallet(): Promise<WalletResponse<IWallet>>;

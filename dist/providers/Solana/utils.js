@@ -37,7 +37,7 @@ const SEND_OPTIONS = {
 };
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 1500;
-async function transactionSender({ connection, txBuffer }) {
+async function transactionSender({ connection, tx }) {
     console.log('[solana:sendTransaction] transactionSender');
     let tryAgain = true;
     let maxTriesCounter = 0;
@@ -46,7 +46,8 @@ async function transactionSender({ connection, txBuffer }) {
     while (tryAgain) {
         try {
             maxTriesCounter++;
-            txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS);
+            txid = await connection.sendRawTransaction(tx, SEND_OPTIONS);
+            console.log(`https://solscan.io/tx/${txid}`);
             await new Promise((r) => setTimeout(r, RETRY_DELAY));
             const result = await connection.getSignatureStatus(txid, {
                 searchTransactionHistory: true,
@@ -150,7 +151,7 @@ async function transactionConfirmationWaiter({ connection, txHash, blockhashWith
         }
         return response;
     }, {
-        retries: 5,
+        retries: 6,
         minTimeout: 1e3,
     });
     return response;

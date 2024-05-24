@@ -2,14 +2,14 @@
 import { BlockhashWithExpiryBlockHeight, Connection, Keypair, VersionedTransactionResponse } from '@solana/web3.js';
 type TransactionSenderArgs = {
     connection: Connection;
-    txBuffer: Buffer;
+    tx: Buffer;
 };
 type TransactionConfirmationWaiterArgs = {
     connection: Connection;
     txHash: string;
     blockhashWithExpiryBlockHeight: BlockhashWithExpiryBlockHeight;
 };
-export declare function transactionSender({ connection, txBuffer }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null>;
+export declare function transactionSender({ connection, tx }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null>;
 export declare function transactionConfirmationWaiter({ connection, txHash, blockhashWithExpiryBlockHeight, }: TransactionConfirmationWaiterArgs): Promise<VersionedTransactionResponse | null>;
 export declare const generateMnemonic: () => string;
 export declare const generateBaseKeypair: () => Keypair;
