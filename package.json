@@ -23,7 +23,7 @@
     },
     "homepage": "https://github.com/decentralized-education/utils#readme",
     "dependencies": {
-        "@solana/web3.js": "^1.91.4",
+        "@solana/web3.js": "^1.91.8",
         "@ton/core": "^0.56.1",
         "@ton/crypto": "^3.2.0",
         "@ton/ton": "^13.10.0",
