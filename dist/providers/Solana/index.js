@@ -252,37 +252,6 @@ class SolanaWalletProvider {
             };
         }
     }
-    async runLimitOrder(wallet, base, tx) {
-        try {
-            const connection = this._connection;
-            const transactionBuf = Buffer.from(tx, 'base64');
-            var transaction = web3_js_1.VersionedTransaction.deserialize(transactionBuf);
-            const addPriorityFee = web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: 20000,
-            });
-            const addressLookupTableAccounts = await Promise.all(transaction.message.addressTableLookups.map(async (lookup) => {
-                return new web3_js_1.AddressLookupTableAccount({
-                    key: lookup.accountKey,
-                    state: web3_js_1.AddressLookupTableAccount.deserialize(await connection.getAccountInfo(lookup.accountKey).then((res) => res.data)),
-                });
-            }));
-            var message = web3_js_1.TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts });
-            message.instructions.push(addPriorityFee);
-            transaction.message = message.compileToV0Message(addressLookupTableAccounts);
-            transaction.sign([wallet, base]);
-            const rawTransaction = transaction.serialize();
-            const txid = await (0, web3_js_1.sendAndConfirmRawTransaction)(connection, Buffer.from(rawTransaction), {
-                skipPreflight: true,
-                commitment: 'confirmed',
-                maxRetries: 2,
-            });
-            console.log(`https://solscan.io/tx/${txid}`);
-        }
-        catch (error) {
-            console.error('Error running limit order:', error);
-            throw error;
-        }
-    }
     async sendTransaction(parameters) {
         try {
             const connection = this._connection;

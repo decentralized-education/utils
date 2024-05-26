@@ -27,7 +27,6 @@ export default class SolanaWalletProvider implements IWalletProvider {
     }>;
     sign(parameters: IWalletProviderCallParameters, base?: Keypair): Promise<any>;
     simulate(parameters: IWalletProviderCallParameters): Promise<any>;
-    runLimitOrder(wallet: Keypair, base: Keypair, tx: string): Promise<any>;
     sendTransaction(parameters: IWalletProviderCallParameters): Promise<WalletResponse<string>>;
     createWalletFromPrivateKey(privateKey: string): Promise<WalletResponse<IWallet>>;
     createWallet(): Promise<WalletResponse<IWallet>>;
