@@ -178,19 +178,19 @@ class SolanaWalletProvider {
             }
             const transactionBuf = Buffer.from(parameters.data, 'base64');
             let transaction = web3_js_1.VersionedTransaction.deserialize(transactionBuf);
-            const addPriorityFee = web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: 20000,
-            });
-            const addressLookupTableAccounts = await Promise.all(transaction.message.addressTableLookups.map(async (lookup) => {
-                return new web3_js_1.AddressLookupTableAccount({
-                    key: lookup.accountKey,
-                    state: web3_js_1.AddressLookupTableAccount.deserialize(await connection.getAccountInfo(lookup.accountKey).then((res) => res.data)),
-                });
-            }));
-            let message = web3_js_1.TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts });
-            message.instructions.push(addPriorityFee);
-            transaction.message = message.compileToV0Message(addressLookupTableAccounts);
             if (base) {
+                const addPriorityFee = web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 20000,
+                });
+                const addressLookupTableAccounts = await Promise.all(transaction.message.addressTableLookups.map(async (lookup) => {
+                    return new web3_js_1.AddressLookupTableAccount({
+                        key: lookup.accountKey,
+                        state: web3_js_1.AddressLookupTableAccount.deserialize(await connection.getAccountInfo(lookup.accountKey).then((res) => res.data)),
+                    });
+                }));
+                let message = web3_js_1.TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts });
+                message.instructions.push(addPriorityFee);
+                transaction.message = message.compileToV0Message(addressLookupTableAccounts);
                 transaction.sign([wallet, base]);
             }
             else {
