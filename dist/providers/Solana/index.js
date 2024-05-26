@@ -168,6 +168,49 @@ class SolanaWalletProvider {
             success: false,
         };
     }
+    async sign(parameters, base) {
+        console.log('[solana:sign]');
+        try {
+            const connection = this._connection;
+            const wallet = parameters.wallet;
+            if (!parameters.data) {
+                throw new Error('No data provided in parameters');
+            }
+            const transactionBuf = Buffer.from(parameters.data, 'base64');
+            let transaction = web3_js_1.VersionedTransaction.deserialize(transactionBuf);
+            if (base) {
+                const addPriorityFee = web3_js_1.ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 20000,
+                });
+                const addressLookupTableAccounts = await Promise.all(transaction.message.addressTableLookups.map(async (lookup) => {
+                    return new web3_js_1.AddressLookupTableAccount({
+                        key: lookup.accountKey,
+                        state: web3_js_1.AddressLookupTableAccount.deserialize(await connection.getAccountInfo(lookup.accountKey).then((res) => res.data)),
+                    });
+                }));
+                let message = web3_js_1.TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts });
+                message.instructions.push(addPriorityFee);
+                transaction.message = message.compileToV0Message(addressLookupTableAccounts);
+                transaction.sign([wallet, base]);
+            }
+            else {
+                transaction.sign([wallet]);
+            }
+            const signedTransactionBuf = transaction.serialize();
+            const base64String = Buffer.from(signedTransactionBuf).toString('base64');
+            return {
+                success: true,
+                signedTransaction: base64String
+            };
+        }
+        catch (e) {
+            console.error('[solana:sign] error', e);
+            return {
+                success: false,
+                error: e.message,
+            };
+        }
+    }
     async simulate(parameters) {
         console.log('[solana:simulate]');
         try {
@@ -212,11 +255,8 @@ class SolanaWalletProvider {
     async sendTransaction(parameters) {
         try {
             const connection = this._connection;
-            const serializedTransaction = Buffer.from(parameters.data, 'base64');
-            const transaction = web3_js_1.VersionedTransaction.deserialize(serializedTransaction);
+            const tx = Buffer.from(parameters.data, 'base64');
             //@ts-ignore
-            transaction.sign([parameters.wallet]);
-            const signedTransaction = transaction.serialize();
             let iteration = 0;
             let isSuccessful = false;
             let transactionResponse = null;
@@ -225,7 +265,7 @@ class SolanaWalletProvider {
                 console.log('[solana:sendTransaction] sending transaction: ', iteration);
                 transactionResponse = await (0, utils_1.transactionSender)({
                     connection,
-                    txBuffer: Buffer.from(signedTransaction),
+                    tx: tx,
                 });
                 console.log('[solana:sendTransaction] transactionResponse ', transactionResponse);
                 if (transactionResponse && transactionResponse?.meta?.err == null) {

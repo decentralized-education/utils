@@ -4,15 +4,18 @@ import {
     Keypair,
     PublicKey,
     TransactionExpiredBlockheightExceededError,
+    VersionedTransaction,
     VersionedTransactionResponse,
 } from '@solana/web3.js'
 import promiseRetry from 'promise-retry'
 import * as bip39 from 'bip39'
+import { skip } from 'node:test'
+import { max } from 'moment'
 
 const wait = (time: number) => new Promise((resolve) => setTimeout(resolve, time))
 type TransactionSenderArgs = {
     connection: Connection
-    txBuffer: Buffer
+    tx: Buffer
 }
 type TransactionConfirmationWaiterArgs = {
     connection: Connection
@@ -28,7 +31,7 @@ const SEND_OPTIONS = {
 const MAX_RETRIES = 5
 const RETRY_DELAY = 1500
 
-export async function transactionSender({ connection, txBuffer }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
+export async function transactionSender({ connection, tx }: TransactionSenderArgs): Promise<VersionedTransactionResponse | null> {
     console.log('[solana:sendTransaction] transactionSender')
 
     let tryAgain = true
@@ -39,7 +42,8 @@ export async function transactionSender({ connection, txBuffer }: TransactionSen
     while (tryAgain) {
         try {
             maxTriesCounter++
-            txid = await connection.sendRawTransaction(txBuffer, SEND_OPTIONS)
+            txid = await connection.sendRawTransaction(tx, SEND_OPTIONS)
+              console.log(`https://solscan.io/tx/${txid}`)
 
             await new Promise((r) => setTimeout(r, RETRY_DELAY))
 
@@ -153,7 +157,7 @@ export async function transactionConfirmationWaiter({
             return response
         },
         {
-            retries: 5,
+            retries: 6,
             minTimeout: 1e3,
         }
     )

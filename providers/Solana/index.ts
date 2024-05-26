@@ -12,6 +12,10 @@ import {
     VersionedTransactionResponse,
     VersionedTransaction,
     LAMPORTS_PER_SOL,
+    ComputeBudgetProgram,
+    AddressLookupTableAccount,
+    TransactionMessage,
+    sendAndConfirmRawTransaction
 } from '@solana/web3.js'
 import {
     AnyProviderWallet,
@@ -188,50 +192,104 @@ export default class SolanaWalletProvider implements IWalletProvider {
         }
     }
 
-    async simulate(parameters: IWalletProviderCallParameters): Promise<any> {
-        console.log('[solana:simulate]');
+    async sign(parameters: IWalletProviderCallParameters, base?: Keypair): Promise<any> {
+        console.log('[solana:sign]')
 
         try {
-            const connection = this._connection;
+            const connection = this._connection
+            const wallet = parameters.wallet as Keypair
 
             if (!parameters.data) {
-                throw new Error('No data provided in parameters');
+                throw new Error('No data provided in parameters')
+            }
+            const transactionBuf = Buffer.from(parameters.data, 'base64')
+            let transaction = VersionedTransaction.deserialize(transactionBuf)
+
+            if (base) {
+                  const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+                      microLamports: 20000,
+                  })
+
+                  const addressLookupTableAccounts = await Promise.all(
+                      transaction.message.addressTableLookups.map(async (lookup) => {
+                          return new AddressLookupTableAccount({
+                              key: lookup.accountKey,
+                              state: AddressLookupTableAccount.deserialize(
+                                  await connection.getAccountInfo(lookup.accountKey).then((res) => res!.data)
+                              ),
+                          })
+                      })
+                  )
+
+                  let message = TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts })
+                  message.instructions.push(addPriorityFee)
+
+                  transaction.message = message.compileToV0Message(addressLookupTableAccounts)
+                transaction.sign([wallet, base])
+            } else {
+                transaction.sign([wallet])
             }
 
-            const swapTransactionBuf = Buffer.from(parameters.data, 'base64');
-            let transaction: VersionedTransaction;
+           const signedTransactionBuf = transaction.serialize();
+           const base64String = Buffer.from(signedTransactionBuf).toString('base64')
+
+      return {
+          success: true,
+          signedTransaction: base64String
+      }
+    } catch (e) {
+      console.error('[solana:sign] error', e);
+      return {
+        success: false,
+        error: (e as Error).message,
+      };
+    }
+  }
+
+    async simulate(parameters: IWalletProviderCallParameters): Promise<any> {
+        console.log('[solana:simulate]')
+
+        try {
+            const connection = this._connection
+
+            if (!parameters.data) {
+                throw new Error('No data provided in parameters')
+            }
+
+            const swapTransactionBuf = Buffer.from(parameters.data, 'base64')
+            let transaction: VersionedTransaction
 
             try {
-                transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+                transaction = VersionedTransaction.deserialize(swapTransactionBuf)
             } catch (deserializationError) {
-                console.error('[solana:simulate] Transaction deserialization error', deserializationError);
+                console.error('[solana:simulate] Transaction deserialization error', deserializationError)
                 return {
                     success: false,
                     error: 'Transaction deserialization failed',
-                };
+                }
             }
-            
+
             const simulationResult = await connection.simulateTransaction(transaction, {
                 replaceRecentBlockhash: true,
-            });
+            })
 
             if (!simulationResult || simulationResult.value.err) {
-                console.log('[solana:simulate] Simulation error', simulationResult, simulationResult?.value?.err);
+                console.log('[solana:simulate] Simulation error', simulationResult, simulationResult?.value?.err)
                 return {
                     success: false,
                     error: simulationResult.value.err ? JSON.stringify(simulationResult.value.err) : 'Unknown simulation error',
-                };
+                }
             }
 
             return {
                 success: true,
-            };
+            }
         } catch (e) {
-            console.error('[solana:simulate] error', e);
+            console.error('[solana:simulate] error', e)
             return {
                 success: false,
                 error: (e as Error).message,
-            };
+            }
         }
     }
 
@@ -240,14 +298,9 @@ export default class SolanaWalletProvider implements IWalletProvider {
         try {
             const connection = this._connection
 
-            const serializedTransaction = Buffer.from(parameters.data!, 'base64')
-
-            const transaction = VersionedTransaction.deserialize(serializedTransaction)
+            const tx = Buffer.from(parameters.data!, 'base64')
 
             //@ts-ignore
-            transaction.sign([parameters.wallet!])
-
-            const signedTransaction = transaction.serialize()
 
             let iteration = 0
             let isSuccessful = false
@@ -258,7 +311,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
                 console.log('[solana:sendTransaction] sending transaction: ', iteration)
                 transactionResponse = await transactionSender({
                     connection,
-                    txBuffer: Buffer.from(signedTransaction),
+                    tx: tx,
                 })
 
                 console.log('[solana:sendTransaction] transactionResponse ', transactionResponse)
