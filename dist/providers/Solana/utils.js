@@ -74,6 +74,9 @@ async function transactionSender({ connection, tx }) {
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
             });
+            if (response) {
+                console.log("PRE TOKEN BALANCES" + JSON.stringify(response.meta?.preTokenBalances) + " POST TOKEN BALANCES " + JSON.stringify(response.meta?.postTokenBalances));
+            }
             return response;
         }
         catch (e) {

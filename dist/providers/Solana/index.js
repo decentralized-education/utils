@@ -200,7 +200,7 @@ class SolanaWalletProvider {
             const base64String = Buffer.from(signedTransactionBuf).toString('base64');
             return {
                 success: true,
-                signedTransaction: base64String
+                signedTransaction: base64String,
             };
         }
         catch (e) {
@@ -256,7 +256,6 @@ class SolanaWalletProvider {
         try {
             const connection = this._connection;
             const tx = Buffer.from(parameters.data, 'base64');
-            //@ts-ignore
             let iteration = 0;
             let isSuccessful = false;
             let transactionResponse = null;
@@ -273,6 +272,7 @@ class SolanaWalletProvider {
                     isSuccessful = true;
                     return {
                         success: true,
+                        response: transactionResponse
                     };
                     break;
                 }

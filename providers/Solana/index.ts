@@ -15,7 +15,7 @@ import {
     ComputeBudgetProgram,
     AddressLookupTableAccount,
     TransactionMessage,
-    sendAndConfirmRawTransaction
+    sendAndConfirmRawTransaction,
 } from '@solana/web3.js'
 import {
     AnyProviderWallet,
@@ -206,45 +206,43 @@ export default class SolanaWalletProvider implements IWalletProvider {
             let transaction = VersionedTransaction.deserialize(transactionBuf)
 
             if (base) {
-                  const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
-                      microLamports: 20000,
-                  })
+                const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 20000,
+                })
 
-                  const addressLookupTableAccounts = await Promise.all(
-                      transaction.message.addressTableLookups.map(async (lookup) => {
-                          return new AddressLookupTableAccount({
-                              key: lookup.accountKey,
-                              state: AddressLookupTableAccount.deserialize(
-                                  await connection.getAccountInfo(lookup.accountKey).then((res) => res!.data)
-                              ),
-                          })
-                      })
-                  )
+                const addressLookupTableAccounts = await Promise.all(
+                    transaction.message.addressTableLookups.map(async (lookup) => {
+                        return new AddressLookupTableAccount({
+                            key: lookup.accountKey,
+                            state: AddressLookupTableAccount.deserialize(await connection.getAccountInfo(lookup.accountKey).then((res) => res!.data)),
+                        })
+                    })
+                )
 
-                  let message = TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts })
-                  message.instructions.push(addPriorityFee)
+                let message = TransactionMessage.decompile(transaction.message, { addressLookupTableAccounts: addressLookupTableAccounts })
+                message.instructions.push(addPriorityFee)
 
-                  transaction.message = message.compileToV0Message(addressLookupTableAccounts)
+                transaction.message = message.compileToV0Message(addressLookupTableAccounts)
                 transaction.sign([wallet, base])
             } else {
                 transaction.sign([wallet])
             }
 
-           const signedTransactionBuf = transaction.serialize();
-           const base64String = Buffer.from(signedTransactionBuf).toString('base64')
+            const signedTransactionBuf = transaction.serialize()
+            const base64String = Buffer.from(signedTransactionBuf).toString('base64')
 
-      return {
-          success: true,
-          signedTransaction: base64String
-      }
-    } catch (e) {
-      console.error('[solana:sign] error', e);
-      return {
-        success: false,
-        error: (e as Error).message,
-      };
+            return {
+                success: true,
+                signedTransaction: base64String,
+            }
+        } catch (e) {
+            console.error('[solana:sign] error', e)
+            return {
+                success: false,
+                error: (e as Error).message,
+            }
+        }
     }
-  }
 
     async simulate(parameters: IWalletProviderCallParameters): Promise<any> {
         console.log('[solana:simulate]')
@@ -293,14 +291,11 @@ export default class SolanaWalletProvider implements IWalletProvider {
         }
     }
 
-
     async sendTransaction(parameters: IWalletProviderCallParameters): Promise<WalletResponse<string>> {
         try {
             const connection = this._connection
 
             const tx = Buffer.from(parameters.data!, 'base64')
-
-            //@ts-ignore
 
             let iteration = 0
             let isSuccessful = false
@@ -321,6 +316,7 @@ export default class SolanaWalletProvider implements IWalletProvider {
 
                     return {
                         success: true,
+                        response: transactionResponse
                     }
                     break
                 } else {

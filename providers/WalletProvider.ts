@@ -1,4 +1,4 @@
-import { Connection, Keypair } from "@solana/web3.js";
+import { Connection, Keypair, VersionedTransactionResponse } from "@solana/web3.js";
 import { KeyPair } from "@ton/crypto";
 import { TonClient, TonClient4, WalletContractV4 } from "@ton/ton";
 import { ethers } from "ethers";
@@ -20,6 +20,7 @@ export type BaseResponse = {
 export type WalletResponse<T> = BaseResponse & {
     success: boolean;
     wallet?: T;
+    response?: VersionedTransactionResponse;
 };
 export type SendTransactionResponse<T> = {
     success: boolean;

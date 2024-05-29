@@ -1,4 +1,4 @@
-import { Connection, Keypair } from "@solana/web3.js";
+import { Connection, Keypair, VersionedTransactionResponse } from "@solana/web3.js";
 import { TonClient, WalletContractV4 } from "@ton/ton";
 import { ethers } from "ethers";
 export interface IWallet {
@@ -15,6 +15,7 @@ export type BaseResponse = {
 export type WalletResponse<T> = BaseResponse & {
     success: boolean;
     wallet?: T;
+    response?: VersionedTransactionResponse;
 };
 export type SendTransactionResponse<T> = {
     success: boolean;
