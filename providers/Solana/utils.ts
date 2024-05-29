@@ -70,6 +70,7 @@ export async function transactionSender({ connection, tx }: TransactionSenderArg
                 commitment: 'confirmed',
                 maxSupportedTransactionVersion: 0,
             })
+
             return response as VersionedTransactionResponse
         } catch (e) {
             console.log('solana error when getting transaction', e)
